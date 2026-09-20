@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Corte Semanal</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧾</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #E8E4D6;
+    --card: #FBF9F1;
+    --ink: #1C2B22;
+    --ink-soft: #5B655D;
+    --line: rgba(28,43,34,0.16);
+    --gold: #A9791E;
+    --gold-soft: #EFE4C9;
+    --good: #3F6E52;
+    --good-soft: #E1EBE3;
+    --bad: #A6432F;
+    --bad-soft: #F3E1DB;
+    --radius-ticket: 4px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #15211B;
+      --card: #1B2A22;
+      --ink: #ECE6D6;
+      --ink-soft: #A7B2A5;
+      --line: rgba(236,230,214,0.16);
+      --gold: #D4AF5A;
+      --gold-soft: #33301C;
+      --good: #6FAE87;
+      --good-soft: #1E3226;
+      --bad: #D9806D;
+      --bad-soft: #35211D;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Work Sans', sans-serif;
+    padding: env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0) 0;
+    min-height: 100%;
+  }
+  .wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 32px 20px 64px;
+  }
+  h1, h2, .num {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    margin: 0;
+  }
+  header.top {
+    margin-bottom: 28px;
+  }
+  header.top h1 {
+    font-size: 28px;
+    letter-spacing: -0.01em;
+  }
+  header.top p {
+    margin: 4px 0 0;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+  section {
+    margin-bottom: 36px;
+  }
+  .section-label {
+    font-size: 13px;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--line);
+    padding-top: 8px;
+    margin-bottom: 14px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  input[type=date], input[type=number], input[type=url], input[type=text] {
+    width: 100%;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+  input:focus, button:focus, a:focus {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+  .row { display: flex; gap: 12px; }
+  .row > div { flex: 1; }
+  button {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    border-radius: 6px;
+    padding: 13px 18px;
+    cursor: pointer;
+    width: 100%;
+    background: var(--ink);
+    color: var(--paper);
+  }
+  button:active { transform: translateY(1px); }
+  button.secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+
+  /* --- ticket de resultado --- */
+  .ticket {
+    background: var(--card);
+    border: none;
+    padding: 22px 20px 20px;
+    position: relative;
+    margin-top: 18px;
+    border-radius: var(--radius-ticket);
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .ticket::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 8px;
+    background-image: radial-gradient(circle at 6px 0, transparent 5px, var(--paper) 5.5px);
+    background-size: 12px 8px;
+    background-repeat: repeat-x;
+  }
+  .ticket-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--line);
+    gap: 12px;
+  }
+  .ticket-row:last-of-type { border-bottom: none; }
+  .ticket-row span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ticket-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .hero {
+    text-align: left;
+    margin: 18px 0 6px;
+  }
+  .hero .amount {
+    font-size: 40px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .hero .amount.good { color: var(--good); }
+  .hero .amount.bad { color: var(--bad); }
+  .hero .caption {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+  .suggestion {
+    background: var(--gold-soft);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-top: 16px;
+    font-size: 14px;
+  }
+  .suggestion strong { font-family: 'Fraunces', serif; font-weight: 600; }
+  .suggestion .row { margin-top: 10px; align-items: flex-end; }
+
+  /* --- deudas --- */
+  .deuda {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .deuda:last-child { border-bottom: none; }
+  .deuda-top { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+  .deuda-top .nombre { font-weight: 600; }
+  .deuda-top .saldo { font-variant-numeric: tabular-nums; }
+  .bar-bg { height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--good); border-radius: 3px; }
+  .deuda-meta { font-size: 12px; color: var(--ink-soft); margin-top: 5px; }
+  .badge-gracia {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-left: 6px;
+  }
+
+  /* --- historial --- */
+  .hist-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .hist-item:last-child { border-bottom: none; }
+  .hist-item .fecha { color: var(--ink-soft); min-width: 80px; }
+  .hist-item .monto { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .hist-item .monto.good { color: var(--good); }
+  .hist-item .monto.bad { color: var(--bad); }
+  .empty {
+    color: var(--ink-soft);
+    font-size: 14px;
+    padding: 8px 0;
+  }
+
+  .config-screen {
+    max-width: 420px;
+    margin: 15vh auto 0;
+    padding: 0 20px;
+    text-align: left;
+  }
+  .config-screen p { color: var(--ink-soft); font-size: 14px; line-height: 1.5; }
+  footer {
+    margin-top: 48px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: left;
+  }
+  footer a { color: var(--ink-soft); }
+  .hidden { display: none !important; }
+  .banner-warning {
+    background: var(--bad-soft);
+    color: var(--bad);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Pantalla de configuración: solo aparece si no hay URL guardada en este dispositivo -->
+<div id="configScreen" class="config-screen hidden">
+  <h1>Corte Semanal</h1>
+  <p>Conecta este dispositivo con tu Google Sheet. Pega aquí la URL de tu aplicación web de Apps Script (la que copiaste al implementarla). Esta URL se guarda solo en este navegador, nunca se sube al repositorio.</p>
+  <label for="apiUrlInput">URL de la aplicación web</label>
+  <input type="url" id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+  <button id="saveConfigBtn">Guardar y continuar</button>
+</div>
+
+<div id="app" class="wrap hidden">
+  <header class="top">
+    <h1>Corte Semanal</h1>
+    <p id="todayLabel"></p>
+  </header>
+
+  <section id="warningSection" class="hidden">
+    <div class="banner-warning" id="warningText"></div>
+  </section>
+
+  <section>
+    <div class="section-label">Nuevo corte</div>
+    <label for="fechaInput">Sábado en que cae el pago</label>
+    <input type="date" id="fechaInput">
+    <div class="row">
+      <div>
+        <label for="ingresoInput">Renta recibida</label>
+        <input type="number" id="ingresoInput" placeholder="2700" inputmode="decimal">
+      </div>
+      <div>
+        <label for="bonoInput">Bono adicional</label>
+        <input type="number" id="bonoInput" placeholder="0" inputmode="decimal">
+      </div>
+    </div>
+    <button id="calcularBtn">Hacer el corte</button>
+
+    <div id="resultado" class="hidden">
+      <div class="hero">
+        <div class="num amount" id="heroAmount"></div>
+        <div class="caption" id="heroCaption"></div>
+      </div>
+
+      <div class="ticket" id="ticket"></div>
+
+      <div id="suggestionBox" class="suggestion hidden">
+        <strong id="suggestionTitle"></strong>
+        <p id="suggestionText" style="margin:6px 0 0;"></p>
+        <div class="row">
+          <div>
+            <label for="abonoInput">Monto a abonar</label>
+            <input type="number" id="abonoInput" inputmode="decimal">
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <button id="registrarBtn">Registrar este corte</button>
+        <div style="height:10px;"></div>
+        <button id="cancelarBtn" class="secondary">Cancelar</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label">Estado de las deudas</div>
+    <div id="deudasList"></div>
+  </section>
+
+  <section>
+    <div class="section-label">Historial</div>
+    <div id="historialList"></div>
+  </section>
+
+  <footer>
+    Los datos viven en tu Google Sheet privado, no en este sitio.
+    <a href="#" id="resetConfigLink">Cambiar la URL conectada</a>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- datos fijos del modelo (ajusta aquí si algo cambia) ----------
+  const SEMANAL_FIJO = [
+    { concepto: 'Despensa', monto: 1400 },
+    { concepto: 'Escuela Alejandro', monto: 460 },
+    { concepto: 'Escuela Adrián', monto: 230 }
+  ];
+  const GAS_ULTIMO_PAGO = new Date(2026, 5, 20); // 20 de junio de 2026
+  const GAS_MONTO = 1200;
+  const GAS_INTERVALO_MESES = 2;
+  const GRACIA_MANTENIMIENTO = new Date(2027, 1, 19); // 19 de febrero de 2027
+  const GRACIA_AVISO_DIAS = 30;
+
+  // ---------- helpers de fecha ----------
+  function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
+  function addMonths(d, n) { return new Date(d.getFullYear(), d.getMonth() + n, d.getDate()); }
+  function lastDayOfMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+  function nextMonthlyOccurrence(day, fromDate) {
+    let y = fromDate.getFullYear(), m = fromDate.getMonth();
+    let d = Math.min(day, lastDayOfMonth(y, m));
+    let candidate = new Date(y, m, d);
+    if (candidate < stripTime(fromDate)) {
+      m += 1; if (m > 11) { m = 0; y += 1; }
+      d = Math.min(day, lastDayOfMonth(y, m));
+      candidate = new Date(y, m, d);
+    }
+    return candidate;
+  }
+  function nextGasDate(fromDate) {
+    let candidate = new Date(GAS_ULTIMO_PAGO);
+    while (candidate < stripTime(fromDate)) candidate = addMonths(candidate, GAS_INTERVALO_MESES);
+    return candidate;
+  }
+  function stripTime(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function fmtMoney(n) {
+    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n);
+  }
+  function fmtDate(d) {
+    return new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'short' }).format(d);
+  }
+  function round2(n) { return Math.round(n * 100) / 100; }
+
+  // ---------- config / conexión ----------
+  const LS_KEY = 'corteSemanal_apiUrl';
+  let API_URL = localStorage.getItem(LS_KEY);
+
+  const configScreen = document.getElementById('configScreen');
+  const appEl = document.getElementById('app');
+
+  if (!API_URL) {
+    configScreen.classList.remove('hidden');
+  } else {
+    appEl.classList.remove('hidden');
+  }
+
+  document.getElementById('saveConfigBtn').addEventListener('click', function () {
+    const val = document.getElementById('apiUrlInput').value.trim();
+    if (!val) return;
+    localStorage.setItem(LS_KEY, val);
+    location.reload();
+  });
+
+  document.getElementById('resetConfigLink').addEventListener('click', function (e) {
+    e.preventDefault();
+    if (confirm('¿Quitar la URL conectada de este dispositivo?')) {
+      localStorage.removeItem(LS_KEY);
+      location.reload();
+    }
+  });
+
+  if (!API_URL) return; // nada más que hacer hasta que configure
+
+  // ---------- estado en memoria ----------
+  let deudas = [];
+  let registros = [];
+  let ultimaEvaluacion = null;
+
+  const todayLabel = document.getElementById('todayLabel');
+  const hoy = new Date();
+  todayLabel.textContent = new Intl.DateTimeFormat('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }).format(hoy);
+
+  const fechaInput = document.getElementById('fechaInput');
+  fechaInput.valueAsDate = proximoSabadoOHoy(hoy);
+
+  function proximoSabadoOHoy(d) {
+    const day = d.getDay(); // 0=domingo ... 6=sábado
+    if (day === 6) return stripTime(d);
+    const diff = (6 - day + 7) % 7;
+    return addDays(stripTime(d), diff === 0 ? 7 : diff);
+  }
+
+  // ---------- llamadas a la API ----------
+  function apiGet() {
+    return fetch(API_URL).then(function (r) { return r.json(); });
+  }
+  function apiPost(payload) {
+    return fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita el preflight CORS de Apps Script
+      body: JSON.stringify(payload)
+    }).then(function (r) { return r.json(); });
+  }
+
+  function cargarTodo() {
+    return apiGet().then(function (data) {
+      deudas = data.deudas || [];
+      registros = data.registros || [];
+      renderDeudas();
+      renderHistorial();
+      revisarGracia();
+    }).catch(function (err) {
+      console.error(err);
+      alert('No pude conectar con tu Google Sheet. Revisa la URL guardada o tu conexión.');
+    });
+  }
+
+  function revisarGracia() {
+    const mant = deudas.find(function (d) { return d.Nombre === 'Mantenimiento'; });
+    if (!mant || Number(mant.Saldo) <= 0) return;
+    const dias = Math.round((GRACIA_MANTENIMIENTO - stripTime(hoy)) / 86400000);
+    if (dias <= GRACIA_AVISO_DIAS && dias >= 0) {
+      const sec = document.getElementById('warningSection');
+      const txt = document.getElementById('warningText');
+      txt.textContent = 'La gracia sin intereses del mantenimiento residencial termina en ' + dias + ' días (' + fmtDate(GRACIA_MANTENIMIENTO) + '). Es momento de planear ese pago.';
+      sec.classList.remove('hidden');
+    }
+  }
+
+  // ---------- render: deudas ----------
+  const ORIGINALES = { 'Empeño 1': 1600, 'Empeño 2': 1290.5, 'Compartamos': 56700, 'Mantenimiento': 5000 };
+
+  function renderDeudas() {
+    const cont = document.getElementById('deudasList');
+    cont.innerHTML = '';
+    deudas
+      .slice()
+      .sort(function (a, b) { return Number(a.Prioridad) - Number(b.Prioridad); })
+      .forEach(function (d) {
+        const original = ORIGINALES[d.Nombre] || Number(d.Saldo);
+        const saldo = Number(d.Saldo);
+        const pctPagado = original > 0 ? Math.max(0, Math.min(100, 100 - (saldo / original * 100))) : 100;
+        const div = document.createElement('div');
+        div.className = 'deuda';
+        let meta = '';
+        if (d.Tipo === 'interes_variable') {
+          const interes = round2(saldo * Number(d.TasaMensual));
+          meta = 'Interés del mes: ' + fmtMoney(interes) + ' · vence día ' + d.DiaVencimiento;
+        } else if (d.Tipo === 'fijo_total') {
+          meta = 'Pago fijo mensual: ' + fmtMoney(6300) + ' · vence día ' + d.DiaVencimiento;
+        } else if (d.Tipo === 'gracia') {
+          meta = 'Sin intereses hasta ' + fmtDate(GRACIA_MANTENIMIENTO);
+        }
+        div.innerHTML =
+          '<div class="deuda-top"><span class="nombre">' + d.Nombre + '</span><span class="saldo">' + fmtMoney(saldo) + '</span></div>' +
+          '<div class="bar-bg"><div class="bar-fill" style="width:' + pctPagado.toFixed(0) + '%"></div></div>' +
+          '<div class="deuda-meta">' + meta + (d.Tipo === 'gracia' ? '<span class="badge-gracia">sin prisa</span>' : '') + '</div>';
+        cont.appendChild(div);
+      });
+    if (deudas.length === 0) cont.innerHTML = '<div class="empty">Sin deudas registradas.</div>';
+  }
+
+  // ---------- render: historial ----------
+  function renderHistorial() {
+    const cont = document.getElementById('historialList');
+    cont.innerHTML = '';
+    if (registros.length === 0) {
+      cont.innerHTML = '<div class="empty">Todavía no hay cortes registrados.</div>';
+      return;
+    }
+    registros.slice(0, 12).forEach(function (r) {
+      const div = document.createElement('div');
+      div.className = 'hist-item';
+      const esSobra = r.Resultado === 'sobra';
+      div.innerHTML =
+        '<span class="fecha">' + r.Fecha + '</span>' +
+        '<span>' + (esSobra ? 'Sobró' : 'Faltó') + '</span>' +
+        '<span class="monto ' + (esSobra ? 'good' : 'bad') + '">' + fmtMoney(r.Monto) + '</span>';
+      cont.appendChild(div);
+    });
+  }
+
+  // ---------- lógica principal: evaluar la semana ----------
+  function evaluarSemana(fechaInicio, ingreso, bono) {
+    const weekStart = stripTime(fechaInicio);
+    const weekEnd = addDays(weekStart, 6);
+    const vencimientos = SEMANAL_FIJO.map(function (v) { return Object.assign({}, v); });
+
+    const utilDate = nextMonthlyOccurrence(30, weekStart);
+    if (utilDate <= weekEnd) vencimientos.push({ concepto: 'Agua + Luz + Internet', monto: 5900, fecha: utilDate });
+
+    const compartamos = deudas.find(function (d) { return d.Nombre === 'Compartamos'; });
+    const compDate = nextMonthlyOccurrence(15, weekStart);
+    let compartamosPagado = false;
+    if (compDate <= weekEnd && compartamos && Number(compartamos.Saldo) > 0) {
+      vencimientos.push({ concepto: 'Compartamos Crédito', monto: 6300, fecha: compDate });
+      compartamosPagado = true;
+    }
+
+    const emp1 = deudas.find(function (d) { return d.Nombre === 'Empeño 1'; });
+    const emp1Date = nextMonthlyOccurrence(11, weekStart);
+    if (emp1Date <= weekEnd && emp1 && Number(emp1.Saldo) > 0) {
+      const interes = round2(Number(emp1.Saldo) * Number(emp1.TasaMensual));
+      vencimientos.push({ concepto: 'Empeño 1 — interés', monto: interes, fecha: emp1Date });
+    }
+
+    const emp2 = deudas.find(function (d) { return d.Nombre === 'Empeño 2'; });
+    const emp2Date = nextMonthlyOccurrence(21, weekStart);
+    if (emp2Date <= weekEnd && emp2 && Number(emp2.Saldo) > 0) {
+      const interes = round2(Number(emp2.Saldo) * Number(emp2.TasaMensual));
+      vencimientos.push({ concepto: 'Empeño 2 — interés', monto: interes, fecha: emp2Date });
+    }
+
+    const gasDate = nextGasDate(weekStart);
+    if (gasDate <= weekEnd) vencimientos.push({ concepto: 'Gas', monto: GAS_MONTO, fecha: gasDate });
+
+    const totalNecesario = vencimientos.reduce(function (s, v) { return s + v.monto; }, 0);
+    const totalDisponible = Number(ingreso || 0) + Number(bono || 0);
+    const diferencia = round2(totalDisponible - totalNecesario);
+
+    let sugerencia = null;
+    if (diferencia > 0) {
+      const candidatos = deudas
+        .filter(function (d) { return d.Tipo === 'interes_variable' && Number(d.Saldo) > 0; })
+        .sort(function (a, b) { return Number(b.TasaMensual) - Number(a.TasaMensual); });
+      if (candidatos.length > 0) sugerencia = { destino: candidatos[0].Nombre, monto: diferencia };
+    }
+
+    return { weekStart: weekStart, weekEnd: weekEnd, vencimientos: vencimientos, totalNecesario: totalNecesario, totalDisponible: totalDisponible, diferencia: diferencia, sugerencia: sugerencia, compartamosPagado: compartamosPagado };
+  }
+
+  // ---------- UI: calcular ----------
+  document.getElementById('calcularBtn').addEventListener('click', function () {
+    const fecha = fechaInput.valueAsDate;
+    const ingreso = document.getElementById('ingresoInput').value;
+    const bono = document.getElementById('bonoInput').value;
+    if (!fecha || !ingreso) { alert('Pon al menos la fecha y la renta recibida.'); return; }
+
+    ultimaEvaluacion = evaluarSemana(fecha, ingreso, bono);
+    pintarResultado(ultimaEvaluacion);
+  });
+
+  function pintarResultado(ev) {
+    const resultadoEl = document.getElementById('resultado');
+    resultadoEl.classList.remove('hidden');
+
+    const heroAmount = document.getElementById('heroAmount');
+    const heroCaption = document.getElementById('heroCaption');
+    const esSobra = ev.diferencia >= 0;
+    heroAmount.textContent = (esSobra ? '+ ' : '– ') + fmtMoney(Math.abs(ev.diferencia));
+    heroAmount.className = 'num amount ' + (esSobra ? 'good' : 'bad');
+    heroCaption.textContent = esSobra
+      ? 'Sobra esta semana, del ' + fmtDate(ev.weekStart) + ' al ' + fmtDate(ev.weekEnd) + '.'
+      : 'Falta esta semana, del ' + fmtDate(ev.weekStart) + ' al ' + fmtDate(ev.weekEnd) + '. Ese monto tiene que llegar de apoyo.';
+
+    const ticket = document.getElementById('ticket');
+    let html = '';
+    ev.vencimientos.forEach(function (v) {
+      html += '<div class="ticket-row"><span>' + v.concepto + (v.fecha ? ' · ' + fmtDate(v.fecha) : '') + '</span><span>' + fmtMoney(v.monto) + '</span></div>';
+    });
+    html += '<div class="ticket-total"><span>Total necesario</span><span>' + fmtMoney(ev.totalNecesario) + '</span></div>';
+    html += '<div class="ticket-row" style="margin-top:6px;"><span>Disponible (renta + bono)</span><span>' + fmtMoney(ev.totalDisponible) + '</span></div>';
+    ticket.innerHTML = html;
+
+    const box = document.getElementById('suggestionBox');
+    const abonoInput = document.getElementById('abonoInput');
+    if (ev.sugerencia) {
+      box.classList.remove('hidden');
+      document.getElementById('suggestionTitle').textContent = 'Sugerencia: abona a ' + ev.sugerencia.destino;
+      document.getElementById('suggestionText').textContent = 'Es la deuda con más interés de las que siguen activas — cada peso aquí rinde más que en cualquier otro lado.';
+      abonoInput.value = ev.sugerencia.monto;
+    } else {
+      box.classList.add('hidden');
+    }
+
+    resultadoEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  document.getElementById('cancelarBtn').addEventListener('click', function () {
+    document.getElementById('resultado').classList.add('hidden');
+    ultimaEvaluacion = null;
+  });
+
+  document.getElementById('registrarBtn').addEventListener('click', function () {
+    if (!ultimaEvaluacion) return;
+    const ev = ultimaEvaluacion;
+    const abonoInput = document.getElementById('abonoInput');
+    const abonoMonto = ev.sugerencia ? Number(abonoInput.value || 0) : 0;
+    const abonoDestino = ev.sugerencia ? ev.sugerencia.destino : '';
+
+    const payload = {
+      fecha: fechaInput.value,
+      ingreso: Number(document.getElementById('ingresoInput').value || 0),
+      bono: Number(document.getElementById('bonoInput').value || 0),
+      totalDisponible: ev.totalDisponible,
+      totalNecesario: ev.totalNecesario,
+      resultado: ev.diferencia >= 0 ? 'sobra' : 'falta',
+      monto: Math.abs(ev.diferencia),
+      abonoMonto: abonoMonto,
+      abonoDestino: abonoDestino,
+      compartamosPagado: ev.compartamosPagado,
+      detalle: ev.vencimientos
+    };
+
+    const btn = document.getElementById('registrarBtn');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+
+    apiPost(payload).then(function () {
+      document.getElementById('resultado').classList.add('hidden');
+      document.getElementById('ingresoInput').value = '';
+      document.getElementById('bonoInput').value = '';
+      fechaInput.valueAsDate = addDays(fechaInput.valueAsDate, 7);
+      btn.disabled = false;
+      btn.textContent = 'Registrar este corte';
+      return cargarTodo();
+    }).catch(function (err) {
+      console.error(err);
+      alert('No se pudo guardar. Revisa tu conexión e inténtalo otra vez.');
+      btn.disabled = false;
+      btn.textContent = 'Registrar este corte';
+    });
+  });
+
+  cargarTodo();
+})();
+</script>
+</body>
+</html>
